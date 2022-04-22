@@ -1,0 +1,270 @@
+from urllib import request
+from urllib.request import Request
+import PyPDF2 #pip install PyPDF2
+import pyttsx3 #pip install pyttsx3
+import speech_recognition as sr #pip install speechRecognition
+import datetime
+import wikipedia #pip install wikipedia
+import webbrowser
+import os
+from tkinter import *
+from PIL import ImageTk,Image
+
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id)
+
+
+def speak(audio):                    ## whatever we speak through mic is captured by this function ##
+     engine.say(audio)
+     engine.runAndWait()
+
+def wishMe():
+    hour = int(datetime.datetime.now().hour)    # virtual assistant wishes us
+    if hour>=0 and hour<12:
+        speak("Good Morning!")
+
+    elif hour>=12 and hour<18:
+        speak("Good Afternoon!")   
+
+    else:
+        speak("Good Evening!")  
+
+    speak("I am ALPHA Sir. Please click on the speak button and tell me how may I help you") 
+
+def wiki(query):
+  speak('Searching Wikipedia...')
+  query = query.replace("wikipedia", "")
+  results = wikipedia.summary(query, sentences=2)
+  speak("According to Wikipedia")
+  print(results)
+  speak(results)
+
+def yt(query):
+            speak("opening youtube")
+            webbrowser.open("youtube.com")
+
+
+def spot(query):
+
+    # FUNCTION OPENS SPOTIFY
+
+     speak("opening spotify")
+     os.system("spotify")
+
+def goo(query):
+
+    #FUNCTION TO OPEN GOOGLE
+
+     speak("opening google search engine")
+     webbrowser.open("google.com")    
+
+def note(query):
+
+    #FUNCTION TO OPEN NOTEPAD
+
+     speak("opening notepad")
+     os.system("notepad")
+
+def location(query): 
+    
+    # finds the location of the place on google maps
+
+            query = query.replace("where is", "")
+            location = query
+            speak("User asked to Locate")
+            speak(location)
+            webbrowser.open('https://www.google.com/maps/place/' + location + "")
+
+def pdffile(query):
+
+    # reads pages from PDF file 
+            
+            path=open("D:\\dsa.pdf", 'rb')
+            pdfReader=PyPDF2.PdfFileReader(path)
+            n=pdfReader.getNumPages()
+            speak("total number of pages in pdf file are")
+            speak( str(n))
+            speak("sir please tell me from which page i should start reading ")
+            pg=int(input())
+            from_page=pdfReader.getPage(pg)
+            text=from_page.extractText()
+            speak1=pyttsx3.init()
+            speak1.say(text)
+            speak1.runAndWait()
+
+def tellDay():  
+      
+    # This function is for telling the
+    # day of the week
+
+    day = datetime.datetime.today().weekday() + 1
+      
+    #this line tells us about the number 
+    # that will help us in telling the day
+
+    Day_dict = {1: 'Monday', 2: 'Tuesday', 
+                3: 'Wednesday', 4: 'Thursday', 
+                5: 'Friday', 6: 'Saturday',
+                7: 'Sunday'}
+      
+    if day in Day_dict.keys():
+        day_of_the_week = Day_dict[day]
+        print(day_of_the_week)
+        speak("The day is " + day_of_the_week)
+
+def tellTime():
+      
+    # This method will give the time
+
+    time = str(datetime.datetime.now())
+      
+    # the time will be displayed like 
+    # this "2020-06-05 17:50:14.582630"
+    # and then after slicing we can get time
+
+    print(time)
+    hour = time[11:13]
+    min = time[14:16]
+    speak( "The time is " + hour + "Hours and" + min + "Minutes") 
+
+def takeCommand():
+
+    #It takes microphone input from the user and returns string output
+
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")    
+        query = r.recognize_google(audio, language='en-in')
+        print(f"User said: {query}\n")
+
+    except Exception as e:   
+        print("Say that again please...")  
+        return "None"
+        
+    return query
+
+class Widget: #GUI OF VIRTUAL ASSISTAND AND COMMANDSGIVEN
+  def __init__(self):
+   root = Tk()
+   root.title('A.L.P.H.A')
+   root.geometry('520x320')
+   img = ImageTk.PhotoImage(Image.open(r'C:\Users\THE_a.l.p.h.a\Desktop\virtual assistant.jpg'))
+   panel = Label(root, image=img)
+   panel.pack(side='right', fill='both', expand='no')
+   userText = StringVar()
+   userText.set('Your Virtual Assistant')
+   userFrame = LabelFrame(root, text='A.L.P.H.A', font=('Railways', 24,'bold'))
+   userFrame.pack(fill='both', expand='yes')
+   top = Message(userFrame, textvariable=userText, bg='sky blue',fg='white')
+   top.config(font=("Century Gothic", 15, 'bold'))
+   top.pack(side='top', fill='both', expand='yes')
+   btn = Button(root, text='Speak', font=('railways', 10, 'bold'),bg='light green', fg='black', command=self.clicked).pack(fill='x', expand='no')
+   wishMe()
+   root.mainloop()
+
+  def clicked(self):
+
+    while True:
+
+        query = takeCommand().lower()
+
+        # Logic for executing tasks based on query
+
+        if 'wikipedia' in query:
+            wiki(query)
+            exit()
+            
+            
+        elif 'open youtube' in query:
+            yt(query)
+            exit()
+            
+
+        elif 'open google' in query:
+           goo(query)
+           exit()
+               
+        
+        elif 'notepad' in query:
+           note(query)
+           exit()
+            
+
+        elif 'spotify' in query:
+            spot(query)
+            exit()
+            
+
+        elif 'pdf' in query:
+
+            # reads pages from PDF file 
+
+            pdffile(query)
+            exit()
+            
+           
+        elif "where is" in query:
+
+            # finds the location of the place on google maps
+
+            location(query)
+            exit()
+            
+
+        elif "which day it is" in query:
+            tellDay()
+            exit()
+            
+          
+        elif "tell me the time" in query:
+            tellTime()
+            exit()
+           
+if __name__ == "__main__":
+
+ widget=Widget()
+
+     
+ 
+
+
+
+        
+
+        
+
+
+
+
+
+
+
+
+        
+
+         
+
+        
+    
+
+      
+
+     
+
+
+      
+
+      
+
+      
+   
+      
+
+       
+       
